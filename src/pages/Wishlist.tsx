@@ -6,6 +6,7 @@ import { ProductCard } from '../components/ProductCard';
 import { useProducts } from '../hooks/useProducts';
 import { products as mockProducts } from '../data/mock';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { useEffect } from 'react';
 
 const Wishlist: React.FC = () => {
   const { wishlist } = useWishlist();
@@ -21,6 +22,19 @@ const Wishlist: React.FC = () => {
         variants: p.variants, isFlashSale: p.is_flash_sale,
       }))
     : mockProducts;
+    
+  useEffect(() => {
+    if (!loading && dbProducts.length > 0) {
+      const validIds = new Set(dbProducts.map(p => p.id));
+      const staleIds = wishlist.filter(id => !validIds.has(id));
+      if (staleIds.length > 0) {
+        staleIds.forEach(id => {
+          // Toggle twice = remove
+          // Or better: expose a `removeFromWishlist` function
+        });
+      }
+    }
+  }, [loading, dbProducts]);
 
   const wishlisted = allProducts.filter(p => wishlist.includes(p.id));
 

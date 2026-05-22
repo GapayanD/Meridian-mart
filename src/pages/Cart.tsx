@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
+import { useOrders, type CustomerOrder } from '../context/OrderContext';
+import { useToast } from '../context/ToastContext';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { useOrders, type CustomerOrder } from '../context/OrderContext'; 
+import { useToast } from '../context/ToastContext';
 import { formatCurrency, sanitizeInput, validators, cn } from '../lib/utils';
 import {
   Trash2, Plus, Minus, Truck, ShieldCheck, CheckCircle,
@@ -29,7 +33,17 @@ const DELIVERY_OPTIONS = [
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const Cart: React.FC = () => {
-  const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
+  // 1. All hooks must be inside the component
+  const Cart: React.FC = () => {
+  const { cart, refreshCartPrices } = useCart(); // ADD refreshCartPrices
+
+  useEffect(() => {
+    refreshCartPrices();
+  }, []);
+  const { cart, removeFromCart, updateQuantity, cartTotal, clearCart, refreshCartPrices } = useCart();
+  const { addOrder } = useOrders(); 
+  const { showToast } = useToast(); 
+
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderStatus, setOrderStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -43,8 +57,15 @@ const Cart: React.FC = () => {
 
   const selectedDelivery = DELIVERY_OPTIONS.find(o => o.label === form.delivery)!;
   const shippingFee = selectedDelivery?.fee ?? 5;
+  const { addOrder } = useOrders();
+  const { showToast } = useToast();
   // NOTE: this is only for display. The server recalculates the real total.
   const displayTotal = cartTotal + shippingFee;
+
+  // ─── Refresh on mount ────────────────────────────────────────────────────────
+  useEffect(() => {
+    refreshCartPrices();
+  }, []);
 
   // ── Validation ──────────────────────────────────────────────────────────────
   const validate = (): boolean => {
@@ -76,8 +97,6 @@ const Cart: React.FC = () => {
         country:         sanitizeInput(form.country),
         notes:           sanitizeInput(form.notes),
         delivery_method: form.delivery,
-        // Prices are intentionally NOT sent — edge function
-        // re-fetches them from the DB so clients cannot spoof totals.
         cart_items: cart.map(item => ({
           id:               item.id,
           quantity:         item.quantity,
@@ -93,8 +112,37 @@ const Cart: React.FC = () => {
         throw new Error(data?.error ?? error?.message ?? 'Unknown error');
       }
 
+      const orderId = data?.orderId || `ORD-${Date.now()}`; 
+
+      const order: CustomerOrder = {
+        orderId,
+        items: cart.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+          variantLabel: item.selectedVariants
+            ? Object.entries(item.selectedVariants).map(([k, v]) => `${k}: ${v}`).join(', ')
+            : undefined,
+        })),
+        total: displayTotal,
+        shippingFee,
+        status: 'pending',
+        customerName: form.name,
+        customerEmail: form.email,
+        customerPhone: form.phone,
+        deliveryAddress: `${form.address}, ${form.city}, ${form.country}`,
+        deliveryMethod: form.delivery,
+        createdAt: new Date().toISOString(),
+        notes: form.notes,
+      };
+
+      addOrder(order);
       clearCart();
       setOrderStatus('success');
+      showToast('Order placed successfully!', 'success');
+
     } catch (err: any) {
       console.error('[Cart] checkout error:', err);
       setServerError(err.message ?? 'Something went wrong. Please try again.');
@@ -168,7 +216,7 @@ const Cart: React.FC = () => {
 
             <div className="space-y-4">
               {cart.map(item => {
-                const variantKey = Object.entries(item.selectedVariants)
+                const variantKey = Object.entries(item.selectedVariants || {})
                   .sort(([a], [b]) => a.localeCompare(b))
                   .map(([k, v]) => `${k}:${v}`)
                   .join('|');
@@ -197,7 +245,7 @@ const Cart: React.FC = () => {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                      {Object.entries(item.selectedVariants).length > 0 && (
+                      {item.selectedVariants && Object.entries(item.selectedVariants).length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-1">
                           {Object.entries(item.selectedVariants).map(([k, v]) => (
                             <span key={k} className="text-[10px] font-bold text-gray-400 uppercase bg-gray-50 px-2 py-0.5 rounded">

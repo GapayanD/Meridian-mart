@@ -13,7 +13,6 @@ import {
   Filter,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-
 // ── Types ──────────────────────────────────────────────────────────────────────
 type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'rating' | 'sold';
 

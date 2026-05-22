@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search, ShoppingCart, Heart, Menu, Bell, X, User,
 } from 'lucide-react';
@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { label: 'Electronics', path: '/category?type=electronics' },
   { label: 'Fashion',     path: '/category?type=fashion'     },
   { label: 'Flash Sale',  path: '/category?flash=1'          },
+  { label: 'My Orders',   path: '/orders' },
 ];
 
 export const Header: React.FC = () => {
@@ -21,6 +22,25 @@ export const Header: React.FC = () => {
   const [mobileOpen,  setMobileOpen]  = useState(false);
   const navigate  = useNavigate();
   const location  = useLocation();
+
+  // Scroll direction detection
+  const [hidden, setHidden] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY && currentY > 100) {
+        setHidden(true);
+      } else {
+        setHidden(false);
+      }
+      setLastScrollY(currentY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +52,12 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#FAFAF7]">
-
+    <header 
+      className={cn(
+        'sticky top-0 z-50 w-full bg-[#FAFAF7] transition-transform duration-300',
+        hidden && 'md:translate-y-0 -translate-y-full'
+      )}
+    >
       {/* ── Announcement bar ──────────────────────────────────── */}
       <div className="hidden md:block bg-stone-900">
         <div className="container mx-auto px-4 lg:px-8 flex justify-between items-center h-9 text-[11px] font-medium text-stone-400">
@@ -168,8 +192,8 @@ export const Header: React.FC = () => {
                 className={cn(
                   'text-sm font-medium transition-colors pb-2 border-b-2',
                   location.pathname + location.search === link.path ||
-                  (link.path !== '/' && location.pathname.startsWith(link.path.split('?')[0]) &&
-                   (link.path.includes('?') ? location.search.includes(link.path.split('?')[1]) : true))
+                  (link.path !== '/' && location.pathname.startsWith(link.path.split('?')) &&
+                   (link.path.includes('?') ? location.search.includes(link.path.split('?')) : true))
                     ? 'border-amber-600 text-amber-700'
                     : 'border-transparent text-stone-500 hover:text-stone-800',
                 )}
@@ -224,7 +248,7 @@ export const Header: React.FC = () => {
                 onClick={() => setMobileOpen(false)}
                 className={cn(
                   'flex items-center justify-between px-4 py-3.5 rounded-xl text-sm font-semibold transition',
-                  location.pathname === link.path.split('?')[0]
+                  location.pathname === link.path.split('?')
                     ? 'bg-amber-50 text-amber-700'
                     : 'text-stone-600 hover:bg-stone-100',
                 )}

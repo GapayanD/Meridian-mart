@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useToast } from '../context/ToastContext';
+import { ImageWithFallback } from './ImageWithFallback';
 
 interface ProductCardProps {
   product: Product;
@@ -28,6 +30,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     toggleWishlist(product.id);
   };
 
+  const { showToast } = useToast();
+
+const handleAddToCart = (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+  addToCart(product);
+  showToast(`${product.name.slice(0, 30)} added to cart!`, 'success');
+};
+
+const handleWishlist = (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+  toggleWishlist(product.id);
+  showToast(
+    wishlisted ? 'Removed from wishlist' : 'Added to wishlist!',
+    wishlisted ? 'info' : 'success'
+  );
+};
+
   return (
     <motion.div
       whileHover={{ y: -4 }}
@@ -35,11 +56,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     >
       <Link to={`/product/${product.id}`} className="block">
         <div className="relative aspect-square overflow-hidden bg-[#F8FAFC] flex items-center justify-center p-4">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
-          />
+      <ImageWithFallback
+        src={product.image}
+        alt={product.name}
+        containerClassName="w-full h-full"
+        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+      />
           {product.isFlashSale && (
             <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm uppercase tracking-wider">
               Flash Deal
