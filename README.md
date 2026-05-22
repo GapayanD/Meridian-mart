@@ -1,6 +1,6 @@
 # Meridian Mart
 
-> A mobile-first e-commerce marketplace built with React 19, TypeScript, Supabase, and Tailwind CSS 4. Features a full storefront, admin panel, and server-side order validation via Supabase Edge Functions.
+> A mobile-first e-commerce marketplace built with React 19, TypeScript, Supabase, and Tailwind CSS 4. Features a full storefront with order tracking, admin panel, and server-side order validation via Supabase Edge Functions.
 
 ---
 
@@ -15,7 +15,7 @@
 - [Edge Function Deployment](#edge-function-deployment)
 - [Admin Setup](#admin-setup)
 - [Project Structure](#project-structure)
-- [Known Issues & Roadmap](#known-issues--roadmap)
+- [Available Scripts](#available-scripts)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -24,38 +24,55 @@
 ## Features
 
 ### Storefront
-- Animated hero banner with auto-rotating slides
-- Category grid with icon-based navigation
-- Flash Sale section with live countdown timer
-- Product cards with hover animations (Framer Motion)
-- Full product detail page with image gallery, variant selector, and quantity picker
-- Search across product names and descriptions
-- Category filtering with skeleton loading states
-- Wishlist page (UI ready, persistence coming)
-- Guest profile page
+- **Animated hero banner** with auto-rotating slides
+- **Category grid** with icon-based navigation
+- **Flash Sale section** with live countdown timer
+- **Product cards** with hover animations (Framer Motion & Motion)
+- **Full product detail page** with image gallery, variant selector, and quantity picker
+- **Advanced search** across product names and descriptions
+- **Category filtering** with skeleton loading states
+- **Wishlist page** with context-based state management
+- **Guest profile page** with order history
+- **Image optimization** with fallback support
+- **Offline banner** for offline mode awareness
+- **SEO-optimized pages** with dynamic title and meta tags
 
 ### Cart & Checkout
-- Persistent cart via `localStorage` (with Safari private mode fallback)
-- Multi-variant item support — same product with different options stored separately
-- Three delivery options (Standard, Express, Free Shipping)
-- Client-side form validation (name, email, phone, address)
-- XSS-safe input sanitization before submission
-- Cash on Delivery (COD) order flow
-- Order submission via Supabase Edge Function with **server-side price recalculation** — clients cannot spoof totals
+- **Persistent cart** via `localStorage` (with Safari private mode fallback)
+- **Multi-variant item support** — same product with different options stored separately
+- **Three delivery options** — Standard, Express, Free Shipping
+- **Client-side form validation** (name, email, phone, address)
+- **XSS-safe input sanitization** before submission
+- **Cash on Delivery (COD)** order flow
+- **Order submission** via Supabase Edge Function with **server-side price recalculation** — clients cannot spoof totals
+- **Toast notifications** for user feedback (success, error, warning, info)
+
+### Order Management
+- **Order history tracking** — view all past orders with status
+- **Order detail pages** — full breakdown of items, pricing, and delivery info
+- **Order status updates** — track shipment progress in real-time
+- **Local order persistence** — orders stored in localStorage for offline access
 
 ### Admin Panel
-- Supabase Auth–protected login (admin role verified against `admin_users` table)
-- Orders dashboard: search, filter by status, update order status inline
-- Order detail modal with full customer and item breakdown
-- Products dashboard: add, edit, hide/show, delete products
-- Variant builder for product options
-- Image URL preview during product creation
+- **Supabase Auth–protected login** (admin role verified against `admin_users` table)
+- **Orders dashboard** — search, filter by status, update order status inline
+- **Order detail modal** — full customer and item breakdown
+- **Products dashboard** — add, edit, hide/show, delete products
+- **Variant builder** for product options
+- **Image URL preview** during product creation
+
+### Error Handling & UX
+- **Error boundaries** — catch React errors and display recovery UI
+- **Graceful fallbacks** for failed image loads
+- **Skeleton loading states** for better perceived performance
+- **Animated transitions** between pages and modals
+- **Smooth fade-in effects** for content loading
 
 ### Security
-- Prices are ignored from the client payload; the Edge Function fetches them from the database
-- All user inputs sanitized (HTML tag stripping) before insertion
-- Row Level Security (RLS) on all Supabase tables
-- Admin access double-checked server-side on every session
+- **Prices ignored from client payload** — Edge Function fetches them from the database
+- **All user inputs sanitized** (HTML tag stripping) before insertion
+- **Row Level Security (RLS)** on all Supabase tables
+- **Admin access double-checked** server-side on every session
 
 ---
 
@@ -66,11 +83,13 @@
 | Framework | React 19 + TypeScript |
 | Build tool | Vite 6 |
 | Styling | Tailwind CSS 4 (Vite plugin) |
-| Animation | Motion (Framer Motion) |
+| Animation | Motion + Framer Motion |
 | Routing | React Router DOM v7 |
 | Backend | Supabase (Postgres, Auth, Edge Functions) |
+| State Management | React Context (Cart, Order, Wishlist, Toast) |
 | Icons | Lucide React |
 | Utilities | clsx, tailwind-merge |
+| SEO | React Helmet Async |
 
 ---
 
@@ -201,44 +220,55 @@ meridian-mart/
 ├── public/
 ├── src/
 │   ├── components/
-│   │   ├── Banner.tsx          # Auto-rotating hero slider
-│   │   ├── CategoryGrid.tsx    # Icon category navigation
-│   │   ├── Header.tsx          # Sticky nav with search
-│   │   ├── Layout.tsx          # Page wrapper + footer
-│   │   ├── MobileNav.tsx       # Bottom tab bar (mobile)
-│   │   └── ProductCard.tsx     # Card with add-to-cart
+│   │   ├── Banner.tsx              # Auto-rotating hero slider
+│   │   ├── CategoryGrid.tsx        # Icon category navigation
+│   │   ├── ErrorBoundary.tsx       # React error boundary with recovery UI
+│   │   ├── FadeIn.tsx              # Fade-in animation wrapper
+│   │   ├── Header.tsx              # Sticky nav with search
+│   │   ├── ImageWithFallback.tsx   # Image component with fallback support
+│   │   ├── Layout.tsx              # Page wrapper + footer
+│   │   ├── MobileNav.tsx           # Bottom tab bar (mobile)
+│   │   ├── OfflineBanner.tsx       # Offline mode indicator
+│   │   ├── ProductCard.tsx         # Card with add-to-cart
+│   │   ├── SEO.tsx                 # Dynamic title and meta tags
+│   │   └── SkeletonCard.tsx        # Loading skeleton for products
 │   ├── context/
-│   │   └── CartContext.tsx     # Cart state + localStorage persistence
+│   │   ├── CartContext.tsx         # Cart state + localStorage persistence
+│   │   ├── OrderContext.tsx        # Order history management
+│   │   ├── ToastContext.tsx        # Toast notifications (success, error, warning, info)
+│   │   └── WishlistContext.tsx     # Wishlist state management
 │   ├── data/
-│   │   └── mock.ts             # Fallback data used when Supabase is not configured
+│   │   └── mock.ts                 # Fallback data used when Supabase is not configured
 │   ├── hooks/
-│   │   └── useProducts.ts      # Supabase product fetching hooks
+│   │   └── useProducts.ts          # Supabase product fetching hooks
 │   ├── lib/
-│   │   ├── supabase.ts         # Supabase client initialisation
-│   │   └── utils.ts            # cn(), formatCurrency(), validators, sanitizeInput()
+│   │   ├── supabase.ts             # Supabase client initialisation
+│   │   └── utils.ts                # cn(), formatCurrency(), validators, sanitizeInput()
 │   ├── pages/
 │   │   ├── admin/
-│   │   │   ├── AdminLayout.tsx   # Auth guard + sidebar layout
-│   │   │   ├── AdminLogin.tsx    # Email/password login form
-│   │   │   ├── AdminOrders.tsx   # Orders table + status management
-│   │   │   └── AdminProducts.tsx # Product CRUD
-│   │   ├── Cart.tsx            # Cart review + checkout form
-│   │   ├── CategoryDetail.tsx  # Filtered product grid + sidebar filters
-│   │   ├── Home.tsx            # Landing page
-│   │   ├── ProductDetail.tsx   # Image gallery + variant picker
-│   │   ├── Profile.tsx         # Guest profile placeholder
-│   │   └── Wishlist.tsx        # Wishlist placeholder
+│   │   │   ├── AdminLayout.tsx     # Auth guard + sidebar layout
+│   │   │   ├── AdminLogin.tsx      # Email/password login form
+│   │   │   ├── AdminOrders.tsx     # Orders table + status management
+│   │   │   └── AdminProducts.tsx   # Product CRUD
+│   │   ├── Cart.tsx                # Cart review + checkout form
+│   │   ├── CategoryDetail.tsx      # Filtered product grid + sidebar filters
+│   │   ├── Home.tsx                # Landing page
+│   │   ├── OrderDetail.tsx         # Single order detail view
+│   │   ├── OrderHistory.tsx        # Past orders list
+│   │   ├── ProductDetail.tsx       # Image gallery + variant picker
+│   │   ├── Profile.tsx             # Guest profile with order history
+│   │   └── Wishlist.tsx            # Wishlist page
 │   ├── types/
-│   │   └── index.ts            # Shared TypeScript interfaces (Product, CartItem)
-│   ├── App.tsx                 # Router + provider setup
-│   ├── index.css               # Tailwind imports + CSS custom properties
-│   └── main.tsx                # React DOM entry point
+│   │   └── index.ts                # Shared TypeScript interfaces (Product, CartItem, Order)
+│   ├── App.tsx                     # Router + provider setup
+│   ├── index.css                   # Tailwind imports + CSS custom properties
+│   └── main.tsx                    # React DOM entry point
 ├── supabase/
 │   ├── functions/
 │   │   └── validate-order/
-│   │       └── index.ts        # Deno Edge Function — server-side order validation
+│   │       └── index.ts            # Deno Edge Function — server-side order validation
 │   └── migrations/
-│       └── 001_schema.sql      # Full database schema + RLS policies
+│       └── 001_schema.sql          # Full database schema + RLS policies
 ├── .env.example
 ├── index.html
 ├── package.json
@@ -260,6 +290,11 @@ meridian-mart/
 
 ---
 
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
 
 ## License
 
