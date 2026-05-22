@@ -9,16 +9,37 @@ import { Sparkles, Zap, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // ── Countdown ──────────────────────────────────────────────────────────────────
-function useCountdown(initialSeconds: number) {
-  const [seconds, setSeconds] = useState(initialSeconds);
+function useCountdown() {
+  const STORAGE_KEY = 'mm-flash-end';
+  const DURATION_MS = 8 * 3600 * 1000 + 45 * 60 * 1000 + 12 * 1000;
+
+  const getOrCreateEnd = () => {
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const end = parseInt(stored, 10);
+      if (end > Date.now()) return end;
+    }
+    const end = Date.now() + DURATION_MS;
+    sessionStorage.setItem(STORAGE_KEY, String(end));
+    return end;
+  };
+
+  const [end] = useState(getOrCreateEnd);
+  const [remaining, setRemaining] = useState(() => Math.max(0, end - Date.now()));
+
   useEffect(() => {
-    if (seconds <= 0) return;
-    const id = setInterval(() => setSeconds(s => s - 1), 1000);
+    if (remaining <= 0) return;
+    const id = setInterval(() => {
+      const diff = Math.max(0, end - Date.now());
+      setRemaining(diff);
+      if (diff <= 0) clearInterval(id);
+    }, 1000);
     return () => clearInterval(id);
-  }, []);
-  const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
-  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-  const s = String(seconds % 60).padStart(2, '0');
+  }, [end]);
+
+  const h = String(Math.floor(remaining / 3600000)).padStart(2, '0');
+  const m = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, '0');
+  const s = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
   return { h, m, s };
 }
 
@@ -55,7 +76,7 @@ const SkeletonCard = () => (
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 const Home: React.FC = () => {
-  const countdown = useCountdown(8 * 3600 + 45 * 60 + 12);
+  const countdown = useCountdown();
 
   // If Supabase isn't configured yet, use mock data so the UI isn't blank
   const {
@@ -87,7 +108,7 @@ const Home: React.FC = () => {
       {/* Categories */}
       <section>
         <div className="flex items-center gap-2 mb-6">
-          <Sparkles className="w-5 h-5 text-blue-600" />
+          <Sparkles className="w-5 h-5 text-amber-700" />
           <h2 className="text-xl font-bold tracking-tight text-gray-900">Explore Categories</h2>
         </div>
         <CategoryGrid />
@@ -159,7 +180,7 @@ const Home: React.FC = () => {
             <div className="text-3xl font-black mb-6 tracking-tight">₱1,240.50</div>
             <div className="grid grid-cols-2 gap-3">
               <button className="bg-[#334155] text-white py-2.5 rounded-lg font-bold text-xs hover:bg-[#475569] transition">Top Up</button>
-              <button className="bg-[#2563EB] text-white py-2.5 rounded-lg font-bold text-xs hover:bg-blue-700 transition">History</button>
+              <button className="bg-[#2563EB] text-white py-2.5 rounded-lg font-bold text-xs hover:bg-amber-700 transition">History</button>
             </div>
           </div>
 

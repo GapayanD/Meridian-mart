@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 import { Layout } from './components/Layout';
 import Home from './pages/Home';
 import CategoryDetail from './pages/CategoryDetail';
@@ -22,37 +23,38 @@ function ScrollToTop() {
 export default function App() {
   return (
     <CartProvider>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          {/* ── Public storefront ─────────────────────────────── */}
-          <Route path="/" element={<Layout><Home /></Layout>} />
-          <Route path="/category" element={<Layout><CategoryDetail /></Layout>} />
-          <Route path="/product/:id" element={<Layout><ProductDetail /></Layout>} />
-          <Route path="/cart" element={<Layout><Cart /></Layout>} />
-          <Route path="/wishlist" element={<Layout><Wishlist /></Layout>} />
-          <Route path="/profile" element={<Layout><Profile /></Layout>} />
+      <WishlistProvider> {/* ADD THIS WRAPPER */}
+        <BrowserRouter>
+          <ScrollToTop />
+          <Routes>
+            {/* ── Public storefront ─────────────────────────────── */}
+            <Route path="/" element={<Layout><Home /></Layout>} />
+            <Route path="/category" element={<Layout><CategoryDetail /></Layout>} />
+            <Route path="/product/:id" element={<Layout><ProductDetail /></Layout>} />
+            <Route path="/cart" element={<Layout><Cart /></Layout>} />
+            <Route path="/wishlist" element={<Layout><Wishlist /></Layout>} />
+            <Route path="/profile" element={<Layout><Profile /></Layout>} />
 
-          {/* ── Admin (no storefront Layout) ──────────────────── */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route
-            path="/admin/orders"
-            element={<AdminLayout><AdminOrders /></AdminLayout>}
-          />
-          <Route
-            path="/admin/products"
-            element={<AdminLayout><AdminProducts /></AdminLayout>}
-          />
-          {/* Redirect bare /admin to orders */}
-          <Route
-            path="/admin"
-            element={<AdminLayout><AdminOrders /></AdminLayout>}
-          />
+            {/* ── Admin (no storefront Layout) ──────────────────── */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+              path="/admin/orders"
+              element={<AdminLayout><AdminOrders /></AdminLayout>}
+            />
+            <Route
+              path="/admin/products"
+              element={<AdminLayout><AdminProducts /></AdminLayout>}
+            />
+            <Route
+              path="/admin"
+              element={<AdminLayout><AdminOrders /></AdminLayout>}
+            />
 
-          {/* Fallback */}
-          <Route path="*" element={<Layout><Home /></Layout>} />
-        </Routes>
-      </BrowserRouter>
+            {/* Fallback */}
+            <Route path="*" element={<Layout><Home /></Layout>} />
+          </Routes>
+        </BrowserRouter>
+      </WishlistProvider> {/* CLOSE HERE */}
     </CartProvider>
   );
 }

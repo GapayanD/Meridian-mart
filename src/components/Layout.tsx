@@ -27,14 +27,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center gap-0.5 mb-3">
-                <span className="text-xl font-black tracking-tighter text-blue-600">
-                  MERIDIAN
-                </span>
-                <span className="text-xl font-bold tracking-tighter text-gray-400">
-                  MART
-                </span>
-              </div>
+            <div className="flex items-center shrink-0">
+              <span className="font-display text-xl font-bold tracking-tight text-stone-900">MERIDIAN</span>
+              <span className="font-display text-xl font-bold tracking-tight text-amber-600">MART</span>
+            </div>
               <p className="text-gray-500 text-sm leading-relaxed">
                 The premium marketplace for local products. Curated for style, comfort, and innovation.
               </p>

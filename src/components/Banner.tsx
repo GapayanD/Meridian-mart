@@ -1,102 +1,127 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
 const slides = [
   {
     id: 1,
-    title: "Mid-Year Tech Gala",
-    subtitle: "Upgrade your workspace with premium hardware. Up to 45% OFF with secure checkout.",
-    badge: "Limited Time Offer",
-    image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=80&w=1200",
-    gradient: "from-[#2563EB] to-[#60A5FA]",
+    badge: 'Mid-Year Sale',
+    heading: 'Tech Deals You Cannot Miss',
+    body: 'Up to 45% off on premium electronics. Free shipping on orders over ₱2,000.',
+    cta: 'Shop Electronics',
+    to: '/category?type=electronics',
+    img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=80&w=800',
+    accent: 'bg-amber-600',
+    dot: 'bg-stone-900',
   },
   {
     id: 2,
-    title: "Elegance Collection",
-    subtitle: "Discover the new season of timeless pieces curated for modern living.",
-    badge: "New Arrivals",
-    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200",
-    gradient: "from-[#1E293B] to-[#475569]",
-  }
+    badge: 'New Arrivals',
+    heading: 'Timeless Pieces for Modern Living',
+    body: 'Discover the new season collection curated for style, comfort, and everyday life.',
+    cta: 'Explore Fashion',
+    to: '/category?type=fashion',
+    img: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=800',
+    accent: 'bg-stone-800',
+    dot: 'bg-stone-900',
+  },
 ];
 
 export const Banner: React.FC = () => {
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
-    }, 6000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setCurrent(p => (p + 1) % slides.length), 6000);
+    return () => clearInterval(t);
   }, []);
 
+  const slide = slides[current];
+
   return (
-    <div className="relative h-[300px] md:h-[320px] w-full overflow-hidden rounded-2xl bg-gray-100 group">
+    <div className="relative overflow-hidden rounded-2xl bg-stone-100 min-h-[280px] md:min-h-[300px] border border-stone-200">
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6 }}
-          className="absolute inset-0 flex"
+          transition={{ duration: 0.5 }}
+          className="grid grid-cols-1 md:grid-cols-2 min-h-[280px] md:min-h-[300px]"
         >
-          {/* Content Side */}
-          <div className={cn("w-full md:w-[60%] flex flex-col justify-center px-8 md:px-16 text-white z-10 bg-gradient-to-r", slides[current].gradient)}>
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
+          {/* Text */}
+          <div className="flex flex-col justify-center px-8 md:px-12 py-10">
+            <motion.span
+              initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit mb-4"
+              transition={{ delay: 0.05 }}
+              className={cn(
+                'inline-block text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full w-fit mb-5 text-white',
+                slide.accent
+              )}
             >
-              {slides[current].badge}
-            </motion.div>
+              {slide.badge}
+            </motion.span>
+
             <motion.h2
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 16, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="text-3xl md:text-5xl font-black leading-tight mb-4 tracking-tighter"
+              className="font-display text-3xl md:text-4xl font-bold leading-[1.1] tracking-tight text-stone-900 mb-4"
             >
-              {slides[current].title}
+              {slide.heading}
             </motion.h2>
+
             <motion.p
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 12, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.15 }}
+              className="text-sm text-stone-500 leading-relaxed mb-8 max-w-xs"
+            >
+              {slide.body}
+            </motion.p>
+
+            <motion.div
+              initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-sm md:text-base text-white/80 mb-8 max-w-sm font-medium leading-relaxed"
             >
-              {slides[current].subtitle}
-            </motion.p>
-            <motion.button
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="w-fit bg-white text-blue-600 px-8 py-3 rounded-xl font-bold text-sm hover:scale-105 transition-all shadow-xl active:scale-95"
-            >
-              Shop Now
-            </motion.button>
+              <Link
+                to={slide.to}
+                className={cn(
+                  'inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-xl text-white hover:opacity-90 transition-opacity w-fit',
+                  slide.accent
+                )}
+              >
+                {slide.cta}
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </motion.div>
           </div>
 
-          {/* Image Side */}
-          <div className="hidden md:block w-[40%] relative overflow-hidden">
+          {/* Image */}
+          <div className="hidden md:block relative overflow-hidden">
             <img
-              src={slides[current].image}
-              className="w-full h-full object-cover grayscale-[0.2] contrast-[1.1]"
-              alt={slides[current].title}
+              src={slide.img}
+              alt={slide.heading}
+              className="w-full h-full object-cover"
             />
-            <div className={cn("absolute inset-y-0 left-0 w-24 bg-gradient-to-r to-transparent", slides[current].gradient)} />
+            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-stone-100 to-transparent" />
           </div>
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute bottom-6 right-8 flex gap-2 z-20">
+      {/* Slide dots */}
+      <div className="absolute bottom-5 left-8 md:left-12 flex gap-2">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrent(i)}
+            aria-label={`Go to slide ${i + 1}`}
             className={cn(
-              "h-1.5 transition-all rounded-full",
-              current === i ? "w-8 bg-white" : "w-2 bg-white/40 hover:bg-white/60"
+              'h-1.5 rounded-full transition-all duration-300',
+              current === i ? 'w-8 bg-stone-800' : 'w-2 bg-stone-300 hover:bg-stone-400'
             )}
           />
         ))}
