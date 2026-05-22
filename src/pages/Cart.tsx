@@ -2,8 +2,6 @@ import { useOrders, type CustomerOrder } from '../context/OrderContext';
 import { useToast } from '../context/ToastContext';
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
-import { useOrders, type CustomerOrder } from '../context/OrderContext'; 
-import { useToast } from '../context/ToastContext';
 import { formatCurrency, sanitizeInput, validators, cn } from '../lib/utils';
 import {
   Trash2, Plus, Minus, Truck, ShieldCheck, CheckCircle,
@@ -33,13 +31,6 @@ const DELIVERY_OPTIONS = [
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const Cart: React.FC = () => {
-  // 1. All hooks must be inside the component
-  const Cart: React.FC = () => {
-  const { cart, refreshCartPrices } = useCart(); // ADD refreshCartPrices
-
-  useEffect(() => {
-    refreshCartPrices();
-  }, []);
   const { cart, removeFromCart, updateQuantity, cartTotal, clearCart, refreshCartPrices } = useCart();
   const { addOrder } = useOrders(); 
   const { showToast } = useToast(); 
@@ -57,9 +48,6 @@ const Cart: React.FC = () => {
 
   const selectedDelivery = DELIVERY_OPTIONS.find(o => o.label === form.delivery)!;
   const shippingFee = selectedDelivery?.fee ?? 5;
-  const { addOrder } = useOrders();
-  const { showToast } = useToast();
-  // NOTE: this is only for display. The server recalculates the real total.
   const displayTotal = cartTotal + shippingFee;
 
   // ─── Refresh on mount ────────────────────────────────────────────────────────

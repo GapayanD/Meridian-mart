@@ -31,29 +31,38 @@ interface OrderContextType {
   clearHistory: () => void;
 }
 
-const STORAGE_KEY = 'mm_order_history';
+const ORDER_STORAGE_KEY = 'mm_order_history';
 
 function readOrders(): CustomerOrder[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(ORDER_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 function writeOrders(orders: CustomerOrder[]) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(orders)); } catch {}
+  try {
+    localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(orders));
+  } catch {}
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [orders, setOrders] = useState<CustomerOrder[]>(readOrders);
+
   useEffect(() => { writeOrders(orders); }, [orders]);
 
-  const addOrder = (order: CustomerOrder) => setOrders(prev => [order, ...prev]);
+  const addOrder = (order: CustomerOrder) => {
+    setOrders(prev => [order, ...prev]);
+  };
+
   const getOrderById = (id: string) => orders.find(o => o.orderId === id);
+
   const clearHistory = () => setOrders([]);
 
   return (

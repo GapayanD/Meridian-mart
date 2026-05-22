@@ -5,7 +5,6 @@ const STATIC_ASSETS = [
   '/manifest.json',
 ];
 
-// Install — cache shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -15,7 +14,6 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate — clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -25,18 +23,15 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch — stale-while-revalidate for navigation, network-first for API
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Supabase API — always network
   if (url.hostname.includes('supabase.co')) {
     event.respondWith(fetch(request).catch(() => caches.match(request)));
     return;
   }
 
-  // Navigation — stale-while-revalidate
   if (request.mode === 'navigate') {
     event.respondWith(
       caches.match('/').then((cached) => {
@@ -52,7 +47,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Everything else — cache first
   event.respondWith(
     caches.match(request).then((cached) => {
       return cached || fetch(request);
